@@ -23,7 +23,10 @@ def reduce_dict(data, to_item=False):
         Reduced dictionary
     """
     for key, val in data.items():
-        data[key] = reduce_value(data[key], average=True, name=key)
+        if key == 'avg_train-loss':
+            data[key] = reduce_value(data[key], average=True, name=key)
+        else:
+            data[key] = data[key]
         if to_item:
             data[key] = data[key].item()
     return data

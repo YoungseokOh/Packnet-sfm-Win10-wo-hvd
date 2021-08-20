@@ -1,3 +1,5 @@
+import torch
+
 
 try:
     import horovod.torch as hvd
@@ -45,4 +47,6 @@ def reduce_value(value, average, name):
     value : torch.Tensor
         reduced value
     """
-    return hvd.allreduce(value, average=average, name=name)
+    # torch.mean(torch.stack([x["train_loss"] for x in outs]))
+    return value
+    # return hvd.allreduce(value, average=average, name=name)

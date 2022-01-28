@@ -40,8 +40,11 @@ class DepthDecoder(nn.Module):
             num_ch_out = self.num_ch_dec[i]
             self.convs[("upconv", i, 1)] = ConvBlock(num_ch_in, num_ch_out)
 
+        # Origin code
         for s in self.scales:
             self.convs[("dispconv", s)] = Conv3x3(self.num_ch_dec[s], self.num_output_channels)
+        # zero depth infer
+        # self.convs[("dispconv", 0)] = Conv3x3(self.num_ch_dec[0], self.num_output_channels)
 
         self.decoder = nn.ModuleList(list(self.convs.values()))
         self.sigmoid = nn.Sigmoid()
@@ -58,7 +61,13 @@ class DepthDecoder(nn.Module):
                 x += [input_features[i - 1]]
             x = torch.cat(x, 1)
             x = self.convs[("upconv", i, 1)](x)
+            # Original code
             if i in self.scales:
                 self.outputs[("disp", i)] = self.sigmoid(self.convs[("dispconv", i)](x))
-
+            # zero depth infer
+            # if i == 0:
+            #     self.outputs[("disp", i)] = self.sigmoid(self.convs[("dispconv", i)](x))
+        # Original return
         return self.outputs
+        # zero depth infer
+        # return self.outputs[("disp", 0)]

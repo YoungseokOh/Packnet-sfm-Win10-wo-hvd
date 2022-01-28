@@ -5,6 +5,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -28,6 +29,9 @@ class ConvBlock(nn.Module):
         super(ConvBlock, self).__init__()
 
         self.conv = Conv3x3(in_channels, out_channels)
+        # infer Relue
+        # self.nonlin = nn.ReLU(inplace=True)
+        # infer ELU
         self.nonlin = nn.ELU(inplace=True)
 
     def forward(self, x):
@@ -49,8 +53,12 @@ class Conv3x3(nn.Module):
         self.conv = nn.Conv2d(int(in_channels), int(out_channels), 3)
 
     def forward(self, x):
+        # Original code
         out = self.pad(x)
         out = self.conv(out)
+        # No padding
+        # out = self.conv(x)
+
         return out
 
 
@@ -60,3 +68,38 @@ def upsample(x):
     return F.interpolate(x, scale_factor=2, mode="nearest")
 
 
+class fSEModule(nn.Module):
+    def __init__(self, high_feature_channel, low_feature_channels, output_channel=None):
+        super(fSEModule, self).__init__()
+        in_channel = high_feature_channel + low_feature_channels
+        out_channel = high_feature_channel
+        if output_channel is not None:
+            out_channel = output_channel
+        reduction = 16
+        channel = in_channel
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+
+        self.fc = nn.Sequential(
+            nn.Linear(channel, channel // reduction, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Linear(channel // reduction, channel, bias=False)
+        )
+
+        self.sigmoid = nn.Sigmoid()
+
+        self.conv_se = nn.Conv2d(in_channels=in_channel, out_channels=out_channel, kernel_size=1, stride=1)
+        self.relu = nn.ReLU(inplace=True)
+
+    def forward(self, high_features, low_features):
+        features = [upsample(high_features)]
+        features += low_features
+        features = torch.cat(features, 1)
+
+        b, c, _, _ = features.size()
+        y = self.avg_pool(features).view(b, c)
+        y = self.fc(y).view(b, c, 1, 1)
+
+        y = self.sigmoid(y)
+        features = features * y.expand_as(features)
+
+        return self.relu(self.conv_se(features))

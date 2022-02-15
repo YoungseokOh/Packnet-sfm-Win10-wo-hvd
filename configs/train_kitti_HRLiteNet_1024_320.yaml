@@ -1,3 +1,8 @@
+arch:
+    max_epochs: 20
+checkpoint:
+    filepath: 'E:/md_model/kitti/HRLiteNet/1024_320'
+    save_top_k: -1
 model:
     name: 'SelfSupModel'
     optimizer:
@@ -8,28 +13,28 @@ model:
             lr: 0.0002
     scheduler:
         name: 'StepLR'
-        step_size: 30
+        step_size: 14
         gamma: 0.5
     depth_net:
-        name: 'PackNet01'
-        version: '1A'
+        name: 'HRLiteNet'
+        version: '18pt'
     pose_net:
-        name: 'PoseNet'
-        version: ''
+        name: 'PoseResNet'
+        version: '18pt'
     params:
         crop: 'garg'
         min_depth: 0.0
         max_depth: 80.0
 datasets:
     augmentation:
-        image_shape: (192, 640)
+        image_shape: (320, 1024)
     train:
         batch_size: 4
         dataset: ['KITTI']
         path: ['Y:/KITTI_dataset/KITTI_raw']
         split: ['data_splits/eigen_zhou_files.txt']
         depth_type: ['velodyne']
-        repeat: [2]
+        repeat: [1]
     validation:
         dataset: ['KITTI']
         path: ['Y:/KITTI_dataset/KITTI_raw']

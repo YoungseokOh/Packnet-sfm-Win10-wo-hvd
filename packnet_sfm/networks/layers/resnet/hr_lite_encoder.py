@@ -35,10 +35,18 @@ def _make_divisible(v, divisor, min_value=None):
 class h_sigmoid(nn.Module):
     def __init__(self, inplace=True):
         super(h_sigmoid, self).__init__()
-        self.relu = nn.ReLU6(inplace=inplace)
+        # Original MobileNetV3 ReLU6 --> LeakyReLU
+        # self.relu = nn.ReLU6(inplace=inplace)
+        # self.relu = nn.LeakyReLU(inplace=inplace)
+        # Hardsigmoid
+        # self.HardSigmoid = nn.Hardsigmoid(inplace=inplace)
+        self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
-        return self.relu(x + 3) / 6
+        # Sigmoid
+        return self.sigmoid(x)
+        # Hardsigmoid
+        # return x * self.HardSigmoid(x, alpha=1/6, beta=1/2)
 
 
 class h_swish(nn.Module):

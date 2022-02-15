@@ -32,7 +32,9 @@ class ConvBlock(nn.Module):
         # infer Relue
         # self.nonlin = nn.ReLU(inplace=True)
         # infer ELU
-        self.nonlin = nn.ELU(inplace=True)
+        # self.nonlin = nn.ELU(inplace=True)
+        # infer LeakyReLU
+        self.nonlin = nn.LeakyReLU(inplace=True)
 
     def forward(self, x):
         out = self.conv(x)

@@ -3,12 +3,12 @@
 import torch.nn as nn
 from functools import partial
 from packnet_sfm.networks.layers.resnet.hr_lite_encoder import MobileEncoder
-from packnet_sfm.networks.layers.resnet.hr_decoder import HRDepthDecoder
+from packnet_sfm.networks.layers.resnet.depth_decoder import DepthDecoder
 from packnet_sfm.networks.layers.resnet.layers import disp_to_depth
 
 ########################################################################################################################
 
-class HRLiteNet(nn.Module):
+class HRLiteNet_test(nn.Module):
     """
     Inverse depth network based on the ResNet architecture.
 
@@ -30,8 +30,8 @@ class HRLiteNet(nn.Module):
         pretrained = version[2:] == 'pt'    # If the last characters are "pt", use ImageNet pretraining
         assert num_layers in [18, 34, 50], 'ResNet version {} not available'.format(num_layers)
 
-        self.encoder = MobileEncoder(False)
-        self.decoder = HRDepthDecoder(num_ch_enc=[16, 24, 40, 80, 160], mobile_encoder=True)
+        self.encoder = MobileEncoder(True)
+        self.decoder = DepthDecoder(num_ch_enc=[16, 24, 40, 80, 160])
         self.scale_inv_depth = partial(disp_to_depth, min_depth=0.1, max_depth=100.0)
 
     def forward(self, x):

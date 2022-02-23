@@ -7,7 +7,6 @@ arXiv preprint arXiv:1905.02244.
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import numpy as np
 import math
 
@@ -35,18 +34,16 @@ def _make_divisible(v, divisor, min_value=None):
 class h_sigmoid(nn.Module):
     def __init__(self, inplace=True):
         super(h_sigmoid, self).__init__()
-        # Original MobileNetV3 ReLU6 --> LeakyReLU
+        # Original MobileNetV3 ReLU6 --> ReLU
         # self.relu = nn.ReLU6(inplace=inplace)
-        # self.relu = nn.LeakyReLU(inplace=inplace)
-        # Hardsigmoid
-        # self.HardSigmoid = nn.Hardsigmoid(inplace=inplace)
+        # self.relu = nn.ReLU(inplace=inplace)
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
-        # Sigmoid
+        # Original code
+        # return self.relu(x + 3) / 6
+        # Hardswish
         return self.sigmoid(x)
-        # Hardsigmoid
-        # return x * self.HardSigmoid(x, alpha=1/6, beta=1/2)
 
 
 class h_swish(nn.Module):
@@ -62,17 +59,33 @@ class SELayer(nn.Module):
     def __init__(self, channel, reduction=4):
         super(SELayer, self).__init__()
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        # New add code
+        self.linear = nn.Linear(channel, channel)
+        # self.conv1x1 = nn.Conv2d(in_channels=channel, out_channels=channel, kernel_size=1, stride=1)
+        self.sigmoid = nn.Sigmoid()
         self.fc = nn.Sequential(
-            nn.Linear(channel, _make_divisible(channel // reduction, 8)),
+            nn.Conv2d(channel, _make_divisible(channel // reduction, 8), kernel_size=1, stride=1),
             nn.ReLU(inplace=True),
-            nn.Linear(_make_divisible(channel // reduction, 8), channel),
+            nn.Conv2d(_make_divisible(channel // reduction, 8), channel, kernel_size=1, stride=1),
             h_sigmoid()
         )
+        # Original code
+        # self.fc = nn.Sequential(
+        #     nn.Linear(channel, _make_divisible(channel // reduction, 8)),
+        #     nn.ReLU(inplace=True),
+        #     nn.Linear(_make_divisible(channel // reduction, 8), channel),
+        #     h_sigmoid()
+        # )
 
     def forward(self, x):
-        b, c, _, _ = x.size()
-        y = self.avg_pool(x).view(b, c)
-        y = self.fc(y).view(b, c, 1, 1)
+        # Original code
+        # b, c, _, _ = x.size()
+        # y = self.avg_pool(x).view(b, c)
+        # y = self.fc(y).view(b, c, 1, 1)
+        # New add code
+        y = self.avg_pool(x)
+        y = self.fc(y)
+        y = self.sigmoid(y)
         return x * y
 
 
@@ -180,7 +193,7 @@ class MobileEncoder(nn.Module):
         self.num_ch_enc = np.array([16, 24, 40, 80, 160])
         self.encoder = MobileNetV3()
         if pretrained:
-            model_path = 'C:/Users/seok436/PycharmProjects/packnet-sfm/configs/mobilenetv3-large-1cd25616.pth'
+            model_path = 'C:/Users/seok436/PycharmProjects/Packnet-sfm_Windows10_without_hvd/configs/mobilenetv3-large-1cd25616.pth'
             state_dict = torch.load(model_path)
             filter_dict_enc = {k: v for k, v in state_dict.items() if k in self.encoder.state_dict()}
             self.encoder.load_state_dict(filter_dict_enc)

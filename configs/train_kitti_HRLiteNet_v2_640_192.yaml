@@ -1,7 +1,7 @@
 arch:
     max_epochs: 20
 checkpoint:
-    filepath: 'E:/md_model/kitti/HRLiteNet/640_192'
+    filepath: 'E:/md_model/kitti/HRLiteNet_test/640_192'
     save_top_k: -1
 model:
     name: 'SelfSupModel'
@@ -16,7 +16,7 @@ model:
         step_size: 14
         gamma: 0.5
     depth_net:
-        name: 'HRLiteNet'
+        name: 'HRLiteNet_v2'
         version: '18pt'
     pose_net:
         name: 'PoseResNet'

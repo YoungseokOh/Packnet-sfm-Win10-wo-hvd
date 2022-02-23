@@ -19,9 +19,15 @@ class HRDepthDecoder(nn.Module):
             self.num_ch_dec = np.array([16, 32, 64, 128, 256])
 
         self.all_position = ["01", "11", "21", "31", "02", "12", "22", "03", "13", "04"]
-        self.attention_position = ["31", "22", "13", "04"]
-        self.non_attention_position = ["01", "11", "21", "02", "12", "03"]
-
+        # Original code
+        # self.attention_position = ["31", "22", "13", "04"]
+        # self.non_attention_position = ["01", "11", "21", "02", "12", "03"]
+        # All attention (fSE)
+        # self.attention_position = ["31", "22", "13", "04", "01", "11", "21", "02", "12", "03"]
+        # self.non_attention_position = []
+        # None attention
+        self.attention_position = []
+        self.non_attention_position = ["01", "11", "21", "02", "12", "03", "31", "22", "13", "04"]
         self.convs = nn.ModuleDict()
         for j in range(5):
             for i in range(5 - j):
@@ -49,6 +55,7 @@ class HRDepthDecoder(nn.Module):
             else:
                 self.convs["X_" + index + "_attention"] = fSEModule(num_ch_enc[row + 1] // 2, self.num_ch_enc[row]
                                                                     + self.num_ch_dec[row + 1] * (col - 1))
+
         for index in self.non_attention_position:
             row = int(index[0])
             col = int(index[1])
@@ -111,7 +118,8 @@ class HRDepthDecoder(nn.Module):
                 features["X_" + index] = self.convs["X_" + index + "_attention"](
                     self.convs["X_{}{}_Conv_0".format(row + 1, col - 1)](features["X_{}{}".format(row + 1, col - 1)]),
                     low_features)
-            elif index in self.non_attention_position:
+
+            if index in self.non_attention_position:
                 conv = [self.convs["X_{}{}_Conv_0".format(row + 1, col - 1)],
                         self.convs["X_{}{}_Conv_1".format(row + 1, col - 1)]]
                 if col != 1 and not self.mobile_encoder:

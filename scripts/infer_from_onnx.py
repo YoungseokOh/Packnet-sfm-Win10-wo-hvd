@@ -5,7 +5,7 @@ import os
 import torch
 import numpy as np
 import sys
-sys.path.insert(0, 'C:/Users/seok436/PycharmProjects/packnet-sfm')
+sys.path.insert(0, 'C:/Users/seok436/PycharmProjects/Packnet-sfm_Windows10_without_hvd')
 from glob import glob
 from cv2 import imwrite
 

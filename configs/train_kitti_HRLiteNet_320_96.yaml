@@ -1,7 +1,7 @@
 arch:
     max_epochs: 20
 checkpoint:
-    filepath: 'E:/md_model/kitti/HRLiteNet/640_192'
+    filepath: 'E:/md_model/kitti/HRLiteNet/320_96'
     save_top_k: -1
 model:
     name: 'SelfSupModel'
@@ -27,7 +27,7 @@ model:
         max_depth: 80.0
 datasets:
     augmentation:
-        image_shape: (192, 640)
+        image_shape: (96, 320)
     train:
         batch_size: 16
         dataset: ['KITTI']

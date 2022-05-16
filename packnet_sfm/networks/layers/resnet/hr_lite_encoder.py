@@ -59,10 +59,11 @@ class SELayer(nn.Module):
     def __init__(self, channel, reduction=4):
         super(SELayer, self).__init__()
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
-        # New add code
-        self.linear = nn.Linear(channel, channel)
+        # Original code
+        # self.linear = nn.Linear(channel, channel)
         # self.conv1x1 = nn.Conv2d(in_channels=channel, out_channels=channel, kernel_size=1, stride=1)
         self.sigmoid = nn.Sigmoid()
+        # New add code
         self.fc = nn.Sequential(
             nn.Conv2d(channel, _make_divisible(channel // reduction, 8), kernel_size=1, stride=1),
             nn.ReLU(inplace=True),
@@ -85,7 +86,6 @@ class SELayer(nn.Module):
         # New add code
         y = self.avg_pool(x)
         y = self.fc(y)
-        y = self.sigmoid(y)
         return x * y
 
 
@@ -196,6 +196,14 @@ class MobileEncoder(nn.Module):
             model_path = 'C:/Users/seok436/PycharmProjects/Packnet-sfm_Windows10_without_hvd/configs/mobilenetv3-large-1cd25616.pth'
             state_dict = torch.load(model_path)
             filter_dict_enc = {k: v for k, v in state_dict.items() if k in self.encoder.state_dict()}
+            # change shape torch.Size
+            for k, v in state_dict.items():
+                if 'fc.0' in k and 'bias' not in k:
+                    filter_dict_enc[k] = v.view(v.shape[0], v.shape[1], 1, 1)
+                    continue
+                if 'fc.2' in k and 'bias' not in k:
+                    filter_dict_enc[k] = v.view(v.shape[0], v.shape[1], 1, 1)
+                    continue
             self.encoder.load_state_dict(filter_dict_enc)
 
     def forward(self, input_image):

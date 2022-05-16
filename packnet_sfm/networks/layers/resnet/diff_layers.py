@@ -367,27 +367,44 @@ class ChannelAttention(nn.Module):
     def __init__(self, in_planes, ratio=16):
         super(ChannelAttention, self).__init__()
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
-
         self.fc = nn.Sequential(
-            nn.Linear(in_planes, in_planes // ratio, bias=False),
+            nn.Conv2d(in_planes, in_planes // ratio, kernel_size=1, stride=1),
             nn.ReLU(inplace=True),
-            nn.Linear(in_planes // ratio, in_planes, bias=False)
+            nn.Conv2d(in_planes // ratio, in_planes, kernel_size=1, stride=1)
         )
+        # Original code
+        # self.fc = nn.Sequential(
+        #     nn.Linear(in_planes, in_planes // ratio, bias=False),
+        #     nn.ReLU(inplace=True),
+        #     nn.Linear(in_planes // ratio, in_planes, bias=False)
+        # )
         self.sigmoid = nn.Sigmoid()
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
 
+
     def forward(self, in_feature):
         x = in_feature
-        b, c, _, _ = in_feature.size()
-        avg_out = self.fc(self.avg_pool(x).view(b, c)).view(b, c, 1, 1)
-        out = avg_out
-        return self.sigmoid(out).expand_as(in_feature) * in_feature
+        out = self.avg_pool(x)
+        out = self.fc(out)
+        out = self.sigmoid(out)
+        features = out * in_feature
+        return features
+
+        # Original code
+        # x = in_feature
+        # b, c, _, _ = in_feature.size()
+        # avg_out = self.fc(self.avg_pool(x).view(b, c)).view(b, c, 1, 1)
+        # out = avg_out
+        # return self.sigmoid(out) * in_feature
+        # expand(size())
+        # return self.sigmoid(out).expand(in_feature.size()) * in_feature
+        # expand_as
+        # return self.sigmoid(out).expand_as(in_feature) * in_feature
 
 
 ## SpatialAttetion
-
 class SpatialAttention(nn.Module):
     def __init__(self, kernel_size=7):
         super(SpatialAttention, self).__init__()

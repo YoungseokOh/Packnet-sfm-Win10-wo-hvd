@@ -1,5 +1,9 @@
 arch:
-    max_epochs: 1
+    max_epochs: 20
+    quantization: True
+checkpoint:
+    filepath: 'E:/md_model/kitti/DepthResNet/640_192_qat'
+    save_top_k: -1
 model:
     name: 'SelfSupModel'
     optimizer:
@@ -10,7 +14,7 @@ model:
             lr: 0.0002
     scheduler:
         name: 'StepLR'
-        step_size: 30
+        step_size: 14
         gamma: 0.5
     depth_net:
         name: 'DepthResNet'
@@ -26,19 +30,20 @@ datasets:
     augmentation:
         image_shape: (192, 640)
     train:
-        batch_size: 6
+        batch_size: 16
         dataset: ['KITTI']
-        path: ['C:/Users/seok436/PycharmProjects/packnet-sfm/data/datasets/KITTI_tiny']
-        split: ['kitti_tiny.txt']
+        path: ['Y:/KITTI_dataset/KITTI_raw']
+        split: ['data_splits/eigen_zhou_files.txt']
         depth_type: ['velodyne']
         repeat: [1]
     validation:
         dataset: ['KITTI']
-        path: ['C:/Users/seok436/PycharmProjects/packnet-sfm/data/datasets/KITTI_tiny']
-        split: ['kitti_tiny.txt']
+        path: ['Y:/KITTI_dataset/KITTI_raw']
+        split: ['data_splits/eigen_val_files.txt',
+                'data_splits/eigen_test_files.txt']
         depth_type: ['velodyne']
     test:
         dataset: ['KITTI']
-        path: ['C:/Users/seok436/PycharmProjects/packnet-sfm/data/datasets/KITTI_tiny']
-        split: ['kitti_tiny.txt']
+        path: ['Y:/KITTI_dataset/KITTI_raw']
+        split: ['data_splits/eigen_test_files.txt']
         depth_type: ['velodyne']

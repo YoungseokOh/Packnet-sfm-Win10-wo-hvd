@@ -273,12 +273,16 @@ class HighResolutionModule(nn.Module):
                 elif j > i:
                     width_output = x[i].shape[-1]
                     height_output = x[i].shape[-2]
-                    y = y + F.interpolate(
-                        self.fuse_layers[i][j](x[j]),
-                        size=[height_output, width_output],
+                    upsam_x = nn.Upsample(size=[height_output, width_output],
                         mode='bilinear',
-                        align_corners=True
-                    )
+                        align_corners=True)
+                    y = y + upsam_x(self.fuse_layers[i][j](x[j]))
+                    # y = y + F.interpolate(
+                    #     self.fuse_layers[i][j](x[j]),
+                    #     size=[height_output, width_output],
+                    #     mode='bilinear',
+                    #     align_corners=True
+                    # )
                 else:
                     y = y + self.fuse_layers[i][j](x[j])
             x_fuse.append(self.relu(y))

@@ -38,15 +38,19 @@ class ConvBlock(nn.Module):
 
     def __init__(self, in_channels, out_channels):
         super(ConvBlock, self).__init__()
-
-        self.conv = Conv3x3(in_channels, out_channels)
+        # ori
+        # self.conv = Conv3x3(in_channels, out_channels)
+        # revise
+        self.pad = nn.ZeroPad2d(1)
+        self.conv = nn.Conv2d(in_channels, out_channels, 3)
         # ReLU
         self.nonlin = nn.ReLU(inplace=True)
         # ELU
         # self.nonlin = nn.ELU(inplace=True)
 
     def forward(self, x):
-        out = self.conv(x)
+        out = self.pad(x)
+        out = self.conv(out)
         out = self.nonlin(out)
         return out
 

@@ -15,6 +15,7 @@ cfg.arch = CN()
 cfg.arch.seed = 42                      # Random seed for Pytorch/Numpy initialization
 cfg.arch.min_epochs = 1                 # Minimum number of epochs
 cfg.arch.max_epochs = 50                # Maximum number of epochs
+cfg.arch.quantization = False           # Int8 Quantization
 ########################################################################################################################
 ### CHECKPOINT
 ########################################################################################################################

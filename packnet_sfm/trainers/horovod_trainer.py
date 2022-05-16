@@ -17,11 +17,11 @@ class HorovodTrainer(BaseTrainer):
         GPU_NUM = 0  # 원하는 GPU 번호 입력
         device = torch.device(f'cuda:{GPU_NUM}' if torch.cuda.is_available() else 'cpu')
         torch.cuda.set_device(device)  # change allocation of current GPU
-
         torch.backends.cudnn.benchmark = True
 
         self.avg_loss = AvgMeter(50)
         self.dtype = kwargs.get("dtype", None)  # just for test for now
+        # device = torch.device('cpu')
 
 
     def fit(self, module):
@@ -34,6 +34,8 @@ class HorovodTrainer(BaseTrainer):
 
         # Send module to GPU
         module = module.to('cuda')
+        # Send module to CPU
+        # module = module.to('cpu')
         # Configure optimizer and scheduler
         module.configure_optimizers()
 
@@ -120,6 +122,8 @@ class HorovodTrainer(BaseTrainer):
     def test(self, module):
         # Send module to GPU
         module = module.to('cuda', dtype=self.dtype)
+        # send module to CPU
+        # module = module.to('cpu', dtype=self.dtype)
         # Get test dataloaders
         test_dataloaders = module.test_dataloader()
         # Run evaluation
